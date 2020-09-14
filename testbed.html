@@ -4,8 +4,10 @@
         <meta charset="utf-8">
         <title>Blockly Demo: Resizable Blockly (Part 2)</title>
         <script src="blockly/blockly_compressed.js"></script>
+        <script src="blockly/javascript_compressed.js"></script>
         <script src="blockly/blocks_compressed.js"></script>
-        <script src="blockly/blocks/bonus.js"></script> 
+        <script src="blockly/blocks/robot.js"></script>
+        <script src="blockly/generators/javascript/robot.js"></script>
         <script src="blockly/msg/js/en.js"></script>
         <style>
             html, body {
@@ -15,63 +17,65 @@
             body {
                 background-color: #fff;
                 font-family: sans-serif;
-                overflow: hidden;
+                overflow: scroll;
             }
-            h1 {
-                font-weight: normal;
-                font-size: 140%;
+            .row {
+                display: flex;
             }
-            table {
-                height: 100%;
-                width: 100%;
+
+            .column {
+                flex: 50%;
             }
             #blocklyArea {
-                height: 99%;
+                height: 512px;
             }
         </style>
     </head>
     <body>
-        <table>
-            <tr>
-                <td>
-                    <h1><a href="https://developers.google.com/blockly/">Blockly</a> &gt;
-                        <a href="../index.html">Demos</a> &gt; Resizable Blockly (Part 2)</h1>
 
-                    <p>
-                        Once an <a href="index.html">area is defined</a>, Blockly can be
-                        injected and positioned over the area.
-                        A resize handler keeps it in position as the page changes.
-                    </p>
+        <button onclick=execute()>Run</button>
+        <div class="row">
+            <div class="column">
+                <div id="blocklyArea">
+                    <div id="blocklyDiv"></div>
+                </div>
+            </div>
+            <div class="column">
+                <canvas id="myCanvas" width="500" height="500" style="border:1px solid #000000;">
+                </canvas>
+            </div>
+        </div>
 
-                    <p>&rarr; More info on <a href="https://developers.google.com/blockly/guides/configure/web/resizable">injecting resizable Blockly</a>&hellip;</p>
-                </td>
-            </tr>
-            <tr>
-                <td id="blocklyArea">
-                </td>
-            </tr>
-        </table>
-
-        <div id="blocklyDiv" style="position: absolute"></div>
-
-        <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-            <block type="controls_if"></block>
-            <block type="logic_compare"></block>
-            <block type="controls_repeat_ext"></block>
-            <block type="math_number">
-                <field name="NUM">123</field>
-            </block>
-            <block type="math_arithmetic"></block>
-            <block type="text"></block>
-            <block type="text_print"></block>
-        </xml>
 
         <script>
+            function execute(){
+                Blockly.JavaScript.addReservedWords('code');
+                var code = Blockly.JavaScript.workspaceToCode(workspace);
+                try {
+                    eval(code);
+                } catch (e) {
+                    alert(e);
+                }
+            }
+        </script>
+
+        <script> //load toolbox
+            var Connect = new XMLHttpRequest();
+            // Define which file to open and
+            // send the request.
+            Connect.open("GET", "toolbox.xml", false);
+            Connect.setRequestHeader("Content-Type", "text/xml");
+            Connect.send(null);
+            // Place the response in an XML document.
+            var toolbox = Connect.responseXML.childNodes[0];
+        </script>
+
+        <script> //blockly workspace
             var blocklyArea = document.getElementById('blocklyArea');
             var blocklyDiv = document.getElementById('blocklyDiv');
-            var demoWorkspace = Blockly.inject(blocklyDiv,
-                                               {media: 'https://blockly-demo.appspot.com/static/media/',
-                                                toolbox: document.getElementById('toolbox')});
+            var workspace = Blockly.inject(blocklyDiv,
+                                           {media: 'https://blockly-demo.appspot.com/static/media/',
+                                            toolbox: toolbox});
             var onresize = function(e) {
                 // Compute the absolute coordinates and dimensions of blocklyArea.
                 var element = blocklyArea;
@@ -79,7 +83,7 @@
                 var y = 0;
                 do {
                     x += element.offsetLeft;
-                    y += element.offsetTop;
+                    y += element.offsetTop; 
                     element = element.offsetParent;
                 } while (element);
                 // Position blocklyDiv over blocklyArea.
@@ -87,11 +91,11 @@
                 blocklyDiv.style.top = y + 'px';
                 blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
                 blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
-                Blockly.svgResize(demoWorkspace);
+                Blockly.svgResize(workspace);
             };
             window.addEventListener('resize', onresize, false);
             onresize();
-            Blockly.svgResize(demoWorkspace);
+            Blockly.svgResize(workspace);
         </script>
     </body>
 </html>
