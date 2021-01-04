@@ -9,6 +9,7 @@
         <script src="blockly/blocks/robot.js"></script>
         <script src="blockly/generators/javascript/robot.js"></script>
         <script src="blockly/msg/js/en.js"></script>
+        <script src="handlers/snake.js"></script>
         <style>
             html, body {
                 height: 100%;
@@ -41,13 +42,16 @@
                 </div>
             </div>
             <div class="column">
-                <canvas id="myCanvas" width="500" height="500" style="border:1px solid #000000;">
+                <canvas id="resultCanvas" width="500" height="500" style="border:1px solid #000000;">
                 </canvas>
             </div>
         </div>
 
-
-        <script>
+        <script> //initializing handler
+            init();
+        </script>
+        
+        <script> //execute blockly
             function execute(){
                 Blockly.JavaScript.addReservedWords('code');
                 var code = Blockly.JavaScript.workspaceToCode(workspace);
