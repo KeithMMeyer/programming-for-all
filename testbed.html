@@ -6,10 +6,13 @@
         <script src="blockly/blockly_compressed.js"></script>
         <script src="blockly/javascript_compressed.js"></script>
         <script src="blockly/blocks_compressed.js"></script>
+        <script src="blockly/msg/js/en.js"></script>
+
         <script src="blockly/blocks/robot.js"></script>
         <script src="blockly/generators/javascript/robot.js"></script>
-        <script src="blockly/msg/js/en.js"></script>
         <script src="handlers/snake.js"></script>
+
+        <script src="https://neil.fraser.name/software/JS-Interpreter/acorn_interpreter.js"></script> <!-- need to move to local -->
         <style>
             html, body {
                 height: 100%;
@@ -50,16 +53,48 @@
         <script> //initializing handler
             init();
         </script>
-        
+
         <script> //execute blockly
+
+            var runInterval;
+            var running = false;
+            var lastCompleted = false;
+            function internalTick(){
+                if(running){
+                    if(tick()){
+                        if (thisInterp.step()) {
+                            window.setTimeout(internalTick, 300);
+                        } else {
+                            running = false;
+                        }
+                    } else {
+                        window.setTimeout(internalTick, 300);
+                    }
+                }
+            }
+
+            var thisInterp;
             function execute(){
+                running = true;
                 Blockly.JavaScript.addReservedWords('code');
                 var code = Blockly.JavaScript.workspaceToCode(workspace);
+
+                var initFunc = function(interpreter, globalObject) {
+                    interpreter.setProperty(globalObject, 'move', interpreter.createNativeFunction(move));
+                    interpreter.setProperty(globalObject, 'turn', interpreter.createNativeFunction(turn));
+                };
+
+                thisInterp = new Interpreter(code, initFunc);
+
+                runInterval = setInterval(internalTick(), 300);
+
+                /*
                 try {
                     eval(code);
                 } catch (e) {
                     alert(e);
                 }
+                */
             }
         </script>
 
